@@ -1,0 +1,705 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;color:#1a202c;font-size:14px}
+.app{display:flex;min-height:100vh}
+.sidebar{width:200px;background:#1a3c5e;color:#fff;padding:16px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar h2{font-size:13px;font-weight:700;color:#90cdf4;margin-bottom:16px;letter-spacing:1px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:13px;margin-bottom:4px;transition:background .2s;color:#cbd5e0}
+.nav-item:hover,.nav-item.active{background:#2b6cb0;color:#fff}
+.nav-item .icon{font-size:16px}
+.main{flex:1;padding:20px;overflow-x:hidden}
+.page{display:none}
+.page.active{display:block}
+.page-title{font-size:22px;font-weight:700;color:#1a3c5e;margin-bottom:4px}
+.page-sub{font-size:13px;color:#718096;margin-bottom:20px}
+.card{background:#fff;border-radius:12px;padding:16px;border:0.5px solid #e2e8f0;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:600;color:#2d3748;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+.metric{background:#fff;border-radius:10px;padding:14px 16px;border:0.5px solid #e2e8f0}
+.metric-label{font-size:11px;color:#718096;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.metric-val{font-size:24px;font-weight:700;color:#1a3c5e}
+.metric-badge{font-size:11px;padding:2px 8px;border-radius:20px;margin-top:4px;display:inline-block}
+.badge-green{background:#c6f6d5;color:#22543d}
+.badge-red{background:#fed7d7;color:#742a2a}
+.badge-blue{background:#bee3f8;color:#2a4365}
+.badge-amber{background:#fefcbf;color:#744210}
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .2s}
+.btn-primary{background:#2b6cb0;color:#fff}
+.btn-primary:hover{background:#2c5282}
+.btn-danger{background:#e53e3e;color:#fff}
+.btn-danger:hover{background:#c53030}
+.btn-success{background:#38a169;color:#fff}
+.btn-success:hover{background:#276749}
+.btn-outline{background:#fff;color:#2b6cb0;border:1px solid #2b6cb0}
+.btn-sm{padding:5px 10px;font-size:12px}
+table{width:100%;border-collapse:collapse}
+th{background:#edf2f7;font-size:12px;font-weight:600;color:#4a5568;padding:10px 12px;text-align:left;border-bottom:1px solid #e2e8f0}
+td{padding:10px 12px;border-bottom:0.5px solid #f0f0f0;font-size:13px;color:#2d3748;vertical-align:middle}
+tr:hover td{background:#f7fafc}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;background:#fff;color:#1a202c;outline:none}
+input:focus,select:focus{border-color:#4299e1;box-shadow:0 0 0 2px rgba(66,153,225,.2)}
+label{font-size:12px;font-weight:500;color:#4a5568;display:block;margin-bottom:4px}
+.form-group{margin-bottom:12px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tab-bar{display:flex;gap:4px;background:#edf2f7;padding:4px;border-radius:10px;margin-bottom:16px;width:fit-content}
+.tab{padding:7px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:#718096;transition:all .2s}
+.tab.active{background:#fff;color:#2b6cb0;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.chart-wrap{position:relative;width:100%;height:240px}
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.alert-warn{background:#fffbeb;border:1px solid #f6e05e;color:#744210}
+.alert-success{background:#f0fff4;border:1px solid #9ae6b4;color:#22543d}
+.alert-info{background:#ebf8ff;border:1px solid #90cdf4;color:#2a4365}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.tag-veg{background:#c6f6d5;color:#22543d}
+.tag-nonveg{background:#fed7d7;color:#742a2a}
+.tag-beverage{background:#bee3f8;color:#2a4365}
+.tag-snack{background:#fefcbf;color:#744210}
+.progress-bar{background:#e2e8f0;border-radius:20px;height:8px;overflow:hidden;margin-top:4px}
+.progress-fill{height:100%;border-radius:20px;transition:width .5s}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;background:#edf2f7;color:#4a5568}
+.waste-card{background:linear-gradient(135deg,#fff 0%,#f0fff4 100%);border:1px solid #9ae6b4;border-radius:12px;padding:16px}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+#toast{position:fixed;bottom:20px;right:20px;background:#1a3c5e;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;display:none;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.search-bar{padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;width:220px;outline:none}
+.search-bar:focus{border-color:#4299e1}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+<div class="app">
+<div class="sidebar">
+  <div style="margin-bottom:20px">
+    <div style="font-size:18px;font-weight:700;color:#fff">🍽️ Canteen</div>
+    <div style="font-size:11px;color:#90cdf4">Demand Predictor</div>
+  </div>
+  <h2>Menu</h2>
+  <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="icon">📊</span>Dashboard</div>
+  <div class="nav-item" onclick="showPage('menu',this)"><span class="icon">🍛</span>Menu Items</div>
+  <div class="nav-item" onclick="showPage('orders',this)"><span class="icon">📋</span>Orders</div>
+  <div class="nav-item" onclick="showPage('demand',this)"><span class="icon">📈</span>Demand Charts</div>
+  <div class="nav-item" onclick="showPage('analysis',this)"><span class="icon">🔍</span>Analysis</div>
+  <div class="nav-item" onclick="showPage('waste',this)"><span class="icon">♻️</span>Waste Reduction</div>
+  <div style="margin-top:auto;padding-top:20px;border-top:1px solid #2d5a8a;margin-top:30px">
+    <div style="font-size:11px;color:#90cdf4">College Canteen</div>
+    <div style="font-size:11px;color:#718096">DAV Project 2025</div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="page-title">Dashboard Overview</div>
+  <div class="page-sub">Real-time canteen performance & demand prediction</div>
+  <div class="grid-4" id="dash-metrics"></div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">📈 Today's Sales Trend</div>
+      <div class="chart-wrap"><canvas id="ch-trend"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🍛 Category Distribution</div>
+      <div class="chart-wrap"><canvas id="ch-cat"></canvas></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">🔥 Top 5 Items Today</div>
+      <div id="top5-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚠️ Waste Alerts</div>
+      <div id="dash-alerts"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MENU CRUD -->
+<div class="page" id="page-menu">
+  <div class="page-title">Menu Item Management</div>
+  <div class="page-sub">Add, edit, delete menu items — CRUD operations</div>
+  <div class="grid-2" style="align-items:start">
+    <div class="card">
+      <div class="section-header">
+        <div class="card-title" style="margin:0">📋 Menu List</div>
+        <input class="search-bar" placeholder="🔍 Search items..." oninput="filterMenu(this.value)">
+      </div>
+      <div id="menu-table-wrap"></div>
+    </div>
+    <div class="card" id="menu-form-card">
+      <div class="card-title">➕ Add / Edit Item</div>
+      <div class="form-group"><label>Item Name</label><input id="f-name" placeholder="e.g. Masala Dosa"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Category</label>
+          <select id="f-cat">
+            <option>Veg</option><option>Non-Veg</option><option>Beverage</option><option>Snack</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Price (₹)</label><input id="f-price" type="number" placeholder="40"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Avg Daily Demand</label><input id="f-demand" type="number" placeholder="50"></div>
+        <div class="form-group"><label>Prep Time (min)</label><input id="f-prep" type="number" placeholder="10"></div>
+      </div>
+      <div class="form-group"><label>Availability</label>
+        <select id="f-avail"><option>All Day</option><option>Morning</option><option>Afternoon</option><option>Evening</option></select>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-primary" onclick="saveMenuItem()">💾 Save Item</button>
+        <button class="btn btn-outline" onclick="resetMenuForm()">✕ Clear</button>
+      </div>
+      <input type="hidden" id="f-id" value="">
+    </div>
+  </div>
+</div>
+
+<!-- ORDERS CRUD -->
+<div class="page" id="page-orders">
+  <div class="page-title">Order Management</div>
+  <div class="page-sub">Add orders, track sales data — feeds demand prediction</div>
+  <div class="grid-2" style="align-items:start">
+    <div class="card">
+      <div class="section-header">
+        <div class="card-title" style="margin:0">🧾 Order Records</div>
+        <select onchange="filterOrders(this.value)" style="width:140px">
+          <option value="">All Days</option>
+          <option value="Mon">Monday</option><option value="Tue">Tuesday</option>
+          <option value="Wed">Wednesday</option><option value="Thu">Thursday</option>
+          <option value="Fri">Friday</option>
+        </select>
+      </div>
+      <div id="order-table-wrap"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">➕ Add Order Entry</div>
+      <div class="form-group"><label>Select Item</label>
+        <select id="o-item" onchange="autoFillOrderPrice()"></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Quantity</label><input id="o-qty" type="number" placeholder="20" min="1"></div>
+        <div class="form-group"><label>Price (₹)</label><input id="o-price" type="number" placeholder="0" readonly></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Day</label>
+          <select id="o-day"><option>Mon</option><option>Tue</option><option>Wed</option><option>Thu</option><option>Fri</option></select>
+        </div>
+        <div class="form-group"><label>Time Slot</label>
+          <select id="o-slot"><option>8-10 AM</option><option>10-12 PM</option><option>12-2 PM</option><option>2-4 PM</option><option>4-6 PM</option></select>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-success" onclick="addOrder()">✅ Add Order</button>
+        <button class="btn btn-outline" onclick="resetOrderForm()">✕ Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DEMAND CHARTS -->
+<div class="page" id="page-demand">
+  <div class="page-title">Demand Visualization</div>
+  <div class="page-sub">Line, Bar, Scatter, Histogram charts for demand analysis</div>
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchDemandTab('line',this)">Line Chart</div>
+    <div class="tab" onclick="switchDemandTab('bar',this)">Bar Chart</div>
+    <div class="tab" onclick="switchDemandTab('scatter',this)">Scatter Plot</div>
+    <div class="tab" onclick="switchDemandTab('histogram',this)">Histogram</div>
+    <div class="tab" onclick="switchDemandTab('hbar',this)">Horizontal Bar</div>
+    <div class="tab" onclick="switchDemandTab('radar',this)">Radar</div>
+  </div>
+  <div class="card">
+    <div class="section-header">
+      <div class="card-title" id="demand-chart-title" style="margin:0">📈 Weekly Demand - Line Chart</div>
+      <select id="demand-item-filter" onchange="renderDemandChart(currentDemandTab)" style="width:160px"></select>
+    </div>
+    <div class="chart-wrap" style="height:320px"><canvas id="ch-demand"></canvas></div>
+  </div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">⏰ Peak Hours</div>
+      <div class="chart-wrap" style="height:200px"><canvas id="ch-peak"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📅 Day-wise Sales</div>
+      <div class="chart-wrap" style="height:200px"><canvas id="ch-day"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">💰 Revenue by Category</div>
+      <div class="chart-wrap" style="height:200px"><canvas id="ch-rev"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ANALYSIS -->
+<div class="page" id="page-analysis">
+  <div class="page-title">Data Analysis</div>
+  <div class="page-sub">Statistical insights, prediction & correlations</div>
+  <div class="grid-4" id="analysis-metrics"></div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">🔮 7-Day Demand Prediction</div>
+      <div class="chart-wrap"><canvas id="ch-predict"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Price vs Demand Scatter</div>
+      <div class="chart-wrap"><canvas id="ch-scatter2"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 Item-wise Analysis Table</div>
+    <div id="analysis-table"></div>
+  </div>
+</div>
+
+<!-- WASTE REDUCTION -->
+<div class="page" id="page-waste">
+  <div class="page-title">Waste Reduction Suggestions</div>
+  <div class="page-sub">AI-driven recommendations to minimize food waste</div>
+  <div class="grid-3" id="waste-summary"></div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">♻️ Overproduction Risk Items</div>
+      <div class="chart-wrap"><canvas id="ch-waste"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">💡 Smart Suggestions</div>
+      <div id="suggestions-list"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📉 Demand vs Prepared Quantity</div>
+    <div class="chart-wrap" style="height:260px"><canvas id="ch-demvsprepared"></canvas></div>
+  </div>
+</div>
+
+</div><!-- end main -->
+</div><!-- end app -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ---- DATA ----
+let menuItems=[
+  {id:1,name:'Masala Dosa',cat:'Veg',price:40,demand:80,prep:12,avail:'Morning'},
+  {id:2,name:'Idli Sambar',cat:'Veg',price:25,demand:70,prep:8,avail:'Morning'},
+  {id:3,name:'Chicken Biryani',cat:'Non-Veg',price:90,demand:60,prep:20,avail:'Afternoon'},
+  {id:4,name:'Veg Pulao',cat:'Veg',price:60,demand:50,prep:15,avail:'Afternoon'},
+  {id:5,name:'Samosa',cat:'Snack',price:15,demand:100,prep:5,avail:'All Day'},
+  {id:6,name:'Chai',cat:'Beverage',price:10,demand:150,prep:3,avail:'All Day'},
+  {id:7,name:'Vada Pav',cat:'Snack',price:20,demand:90,prep:5,avail:'All Day'},
+  {id:8,name:'Paneer Butter Masala',cat:'Veg',price:80,demand:40,prep:18,avail:'Afternoon'},
+  {id:9,name:'Cold Coffee',cat:'Beverage',price:30,demand:65,prep:4,avail:'All Day'},
+  {id:10,name:'Egg Roll',cat:'Non-Veg',price:35,demand:45,prep:7,avail:'Evening'},
+];
+let nextMenuId=11;
+
+let orders=[
+  {id:1,item:'Masala Dosa',qty:85,price:40,day:'Mon',slot:'8-10 AM',revenue:3400},
+  {id:2,item:'Chai',qty:160,price:10,day:'Mon',slot:'8-10 AM',revenue:1600},
+  {id:3,item:'Chicken Biryani',qty:55,price:90,day:'Mon',slot:'12-2 PM',revenue:4950},
+  {id:4,item:'Samosa',qty:110,price:15,day:'Tue',slot:'10-12 PM',revenue:1650},
+  {id:5,item:'Veg Pulao',qty:45,price:60,day:'Tue',slot:'12-2 PM',revenue:2700},
+  {id:6,item:'Idli Sambar',qty:75,price:25,day:'Wed',slot:'8-10 AM',revenue:1875},
+  {id:7,item:'Vada Pav',qty:95,price:20,day:'Wed',slot:'10-12 PM',revenue:1900},
+  {id:8,item:'Cold Coffee',qty:60,price:30,day:'Thu',slot:'2-4 PM',revenue:1800},
+  {id:9,item:'Paneer Butter Masala',qty:38,price:80,day:'Thu',slot:'12-2 PM',revenue:3040},
+  {id:10,item:'Egg Roll',qty:42,price:35,day:'Fri',slot:'4-6 PM',revenue:1470},
+  {id:11,item:'Masala Dosa',qty:78,price:40,day:'Tue',slot:'8-10 AM',revenue:3120},
+  {id:12,item:'Chai',qty:145,price:10,day:'Wed',slot:'8-10 AM',revenue:1450},
+  {id:13,item:'Samosa',qty:120,price:15,day:'Fri',slot:'10-12 PM',revenue:1800},
+];
+let nextOrderId=14;
+
+let charts={};
+let currentDemandTab='line';
+let menuFilter='';
+let orderDayFilter='';
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.display='block';
+  setTimeout(()=>t.style.display='none',2500);
+}
+
+function showPage(name,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+  if(name==='dashboard')renderDashboard();
+  if(name==='menu')renderMenuTable();
+  if(name==='orders'){populateOrderItemSelect();renderOrderTable();}
+  if(name==='demand'){populateDemandFilter();renderDemandChart('line');renderSmallCharts();}
+  if(name==='analysis')renderAnalysis();
+  if(name==='waste')renderWaste();
+}
+
+// --- DASHBOARD ---
+function renderDashboard(){
+  const totalRev=orders.reduce((s,o)=>s+o.revenue,0);
+  const totalOrders=orders.reduce((s,o)=>s+o.qty,0);
+  const avgDemand=Math.round(menuItems.reduce((s,m)=>s+m.demand,0)/menuItems.length);
+  const wasteRisk=menuItems.filter(m=>m.demand<45).length;
+  document.getElementById('dash-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Total Revenue</div><div class="metric-val">₹${totalRev.toLocaleString()}</div><span class="metric-badge badge-green">+12% this week</span></div>
+    <div class="metric"><div class="metric-label">Items Sold</div><div class="metric-val">${totalOrders}</div><span class="metric-badge badge-blue">Across ${orders.length} orders</span></div>
+    <div class="metric"><div class="metric-label">Avg Daily Demand</div><div class="metric-val">${avgDemand}</div><span class="metric-badge badge-blue">Per item</span></div>
+    <div class="metric"><div class="metric-label">Waste Risk Items</div><div class="metric-val">${wasteRisk}</div><span class="metric-badge badge-red">Need attention</span></div>
+  `;
+  destroyChart('ch-trend');
+  const trendCtx=document.getElementById('ch-trend').getContext('2d');
+  charts['ch-trend']=new Chart(trendCtx,{type:'line',data:{
+    labels:['8-10AM','10-12PM','12-2PM','2-4PM','4-6PM'],
+    datasets:[{label:'Sales Units',data:[210,180,310,140,170],fill:true,tension:.4,borderColor:'#3182ce',backgroundColor:'rgba(49,130,206,.15)',pointBackgroundColor:'#3182ce',pointRadius:4}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f0f0'}}}}});
+
+  destroyChart('ch-cat');
+  const catCtx=document.getElementById('ch-cat').getContext('2d');
+  const catData=getCategoryData();
+  charts['ch-cat']=new Chart(catCtx,{type:'doughnut',data:{
+    labels:Object.keys(catData),
+    datasets:[{data:Object.values(catData),backgroundColor:['#38a169','#e53e3e','#3182ce','#d69e2e'],borderWidth:2,borderColor:'#fff'}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right'}}}});
+
+  const sorted=[...menuItems].sort((a,b)=>b.demand-a.demand).slice(0,5);
+  const max=sorted[0].demand;
+  document.getElementById('top5-list').innerHTML=sorted.map((m,i)=>`
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-weight:500">#${i+1} ${m.name}</span>
+        <span style="color:#718096">${m.demand}/day</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${(m.demand/max*100).toFixed(0)}%;background:${['#3182ce','#38a169','#e53e3e','#d69e2e','#805ad5'][i]}"></div></div>
+    </div>`).join('');
+
+  const low=menuItems.filter(m=>m.demand<45);
+  document.getElementById('dash-alerts').innerHTML=
+    low.length===0?'<div class="alert alert-success">✅ All items have healthy demand levels!</div>':
+    low.map(m=>`<div class="alert alert-warn">⚠️ <b>${m.name}</b> — Low demand (${m.demand}/day). Consider reducing prep quantity.</div>`).join('');
+}
+
+function getCategoryData(){
+  const c={};
+  menuItems.forEach(m=>{c[m.cat]=(c[m.cat]||0)+m.demand;});
+  return c;
+}
+
+// --- MENU CRUD ---
+function getCatTag(cat){
+  const m={Veg:'tag-veg',NonVeg:'tag-nonveg','Non-Veg':'tag-nonveg',Beverage:'tag-beverage',Snack:'tag-snack'};
+  return `<span class="tag ${m[cat]||'tag-snack'}">${cat}</span>`;
+}
+
+function filterMenu(v){menuFilter=v.toLowerCase();renderMenuTable();}
+
+function renderMenuTable(){
+  const filtered=menuItems.filter(m=>m.name.toLowerCase().includes(menuFilter)||m.cat.toLowerCase().includes(menuFilter));
+  document.getElementById('menu-table-wrap').innerHTML=`
+  <div style="overflow-x:auto">
+  <table>
+    <tr><th>Name</th><th>Category</th><th>Price</th><th>Demand</th><th>Avail.</th><th>Actions</th></tr>
+    ${filtered.map(m=>`<tr>
+      <td><b>${m.name}</b></td>
+      <td>${getCatTag(m.cat)}</td>
+      <td>₹${m.price}</td>
+      <td><span style="color:#2b6cb0;font-weight:600">${m.demand}/day</span></td>
+      <td><span class="chip">${m.avail}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-outline btn-sm" onclick="editMenuItem(${m.id})">✏️</button>
+        <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="deleteMenuItem(${m.id})">🗑️</button>
+      </td>
+    </tr>`).join('')}
+  </table></div>`;
+}
+
+function saveMenuItem(){
+  const name=document.getElementById('f-name').value.trim();
+  const cat=document.getElementById('f-cat').value;
+  const price=+document.getElementById('f-price').value;
+  const demand=+document.getElementById('f-demand').value;
+  const prep=+document.getElementById('f-prep').value;
+  const avail=document.getElementById('f-avail').value;
+  const id=document.getElementById('f-id').value;
+  if(!name||!price||!demand){toast('⚠️ Fill all required fields!');return;}
+  if(id){
+    const idx=menuItems.findIndex(m=>m.id==id);
+    menuItems[idx]={id:+id,name,cat,price,demand,prep,avail};
+    toast('✅ Item updated!');
+  } else {
+    menuItems.push({id:nextMenuId++,name,cat,price,demand,prep,avail});
+    toast('✅ Item added!');
+  }
+  resetMenuForm();renderMenuTable();
+}
+
+function editMenuItem(id){
+  const m=menuItems.find(m=>m.id===id);
+  document.getElementById('f-id').value=m.id;
+  document.getElementById('f-name').value=m.name;
+  document.getElementById('f-cat').value=m.cat;
+  document.getElementById('f-price').value=m.price;
+  document.getElementById('f-demand').value=m.demand;
+  document.getElementById('f-prep').value=m.prep;
+  document.getElementById('f-avail').value=m.avail;
+}
+
+function deleteMenuItem(id){
+  menuItems=menuItems.filter(m=>m.id!==id);
+  renderMenuTable();toast('🗑️ Item deleted!');
+}
+
+function resetMenuForm(){
+  ['f-name','f-price','f-demand','f-prep','f-id'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-cat').value='Veg';
+  document.getElementById('f-avail').value='All Day';
+}
+
+// --- ORDERS ---
+function populateOrderItemSelect(){
+  const sel=document.getElementById('o-item');
+  sel.innerHTML=menuItems.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  autoFillOrderPrice();
+}
+
+function autoFillOrderPrice(){
+  const sel=document.getElementById('o-item');
+  const id=+sel.value;
+  const m=menuItems.find(m=>m.id===id);
+  if(m)document.getElementById('o-price').value=m.price;
+}
+
+function filterOrders(day){orderDayFilter=day;renderOrderTable();}
+
+function renderOrderTable(){
+  const filtered=orderDayFilter?orders.filter(o=>o.day===orderDayFilter):orders;
+  document.getElementById('order-table-wrap').innerHTML=`
+  <div style="overflow-x:auto">
+  <table>
+    <tr><th>Item</th><th>Qty</th><th>Price</th><th>Day</th><th>Slot</th><th>Revenue</th><th></th></tr>
+    ${filtered.map(o=>`<tr>
+      <td><b>${o.item}</b></td>
+      <td>${o.qty}</td>
+      <td>₹${o.price}</td>
+      <td><span class="chip">${o.day}</span></td>
+      <td><span style="font-size:12px;color:#718096">${o.slot}</span></td>
+      <td style="color:#38a169;font-weight:600">₹${o.revenue}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteOrder(${o.id})">🗑️</button></td>
+    </tr>`).join('')}
+  </table></div>
+  <div style="padding:10px;font-size:12px;color:#718096">Total: ${filtered.length} records | Revenue: ₹${filtered.reduce((s,o)=>s+o.revenue,0).toLocaleString()}</div>`;
+}
+
+function addOrder(){
+  const sel=document.getElementById('o-item');
+  const itemName=sel.options[sel.selectedIndex].text;
+  const qty=+document.getElementById('o-qty').value;
+  const price=+document.getElementById('o-price').value;
+  const day=document.getElementById('o-day').value;
+  const slot=document.getElementById('o-slot').value;
+  if(!qty||qty<1){toast('⚠️ Enter valid quantity!');return;}
+  orders.push({id:nextOrderId++,item:itemName,qty,price,day,slot,revenue:qty*price});
+  renderOrderTable();toast('✅ Order added!');
+  document.getElementById('o-qty').value='';
+}
+
+function deleteOrder(id){
+  orders=orders.filter(o=>o.id!==id);renderOrderTable();toast('🗑️ Order removed!');
+}
+
+function resetOrderForm(){document.getElementById('o-qty').value='';}
+
+// --- DEMAND CHARTS ---
+function populateDemandFilter(){
+  const sel=document.getElementById('demand-item-filter');
+  sel.innerHTML='<option value="all">All Items</option>'+menuItems.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+}
+
+function switchDemandTab(type,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  currentDemandTab=type;
+  renderDemandChart(type);
+}
+
+function renderDemandChart(type){
+  const titles={line:'📈 Weekly Demand — Line Chart',bar:'📊 Item Demand — Bar Chart',scatter:'⚫ Price vs Demand — Scatter',histogram:'📊 Demand Histogram',hbar:'📊 Horizontal Bar — Items',radar:'🕸️ Category Radar Chart'};
+  document.getElementById('demand-chart-title').textContent=titles[type]||'Chart';
+  destroyChart('ch-demand');
+  const ctx=document.getElementById('ch-demand').getContext('2d');
+  const days=['Mon','Tue','Wed','Thu','Fri'];
+
+  if(type==='line'){
+    const itemId=+document.getElementById('demand-item-filter').value||'all';
+    let datasets=[];
+    const items=itemId==='all'?menuItems.slice(0,5):menuItems.filter(m=>m.id===itemId);
+    const colors=['#3182ce','#38a169','#e53e3e','#d69e2e','#805ad5'];
+    items.forEach((m,i)=>{
+      const base=m.demand;
+      const data=days.map(()=>Math.round(base*(0.8+Math.random()*0.4)));
+      datasets.push({label:m.name,data,borderColor:colors[i%5],backgroundColor:'transparent',tension:.4,pointRadius:4});
+    });
+    charts['ch-demand']=new Chart(ctx,{type:'line',data:{labels:days,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{grid:{color:'#f0f0f0'}}}}});
+  } else if(type==='bar'){
+    const data=menuItems.map(m=>m.demand);
+    charts['ch-demand']=new Chart(ctx,{type:'bar',data:{
+      labels:menuItems.map(m=>m.name.length>12?m.name.slice(0,12)+'…':m.name),
+      datasets:[{label:'Avg Daily Demand',data,backgroundColor:menuItems.map((_,i)=>`hsl(${i*36},70%,55%)`),borderRadius:6}]
+    },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{maxRotation:40}},y:{grid:{color:'#f0f0f0'}}}}});
+  } else if(type==='scatter'){
+    const pts=menuItems.map(m=>({x:m.price,y:m.demand}));
+    charts['ch-demand']=new Chart(ctx,{type:'scatter',data:{
+      datasets:[{label:'Items',data:pts,backgroundColor:'rgba(49,130,206,.7)',pointRadius:7,pointHoverRadius:9}]
+    },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){const m=menuItems[c.dataIndex];return `${m.name}: ₹${m.price}, ${m.demand}/day`;}}}},scales:{x:{title:{display:true,text:'Price (₹)'}},y:{title:{display:true,text:'Demand/day'}}}}});
+  } else if(type==='histogram'){
+    const bins=[0,30,60,90,120,150,200];
+    const labels=bins.slice(0,-1).map((b,i)=>`${b}-${bins[i+1]}`);
+    const counts=labels.map((_,i)=>menuItems.filter(m=>m.demand>=bins[i]&&m.demand<bins[i+1]).length);
+    charts['ch-demand']=new Chart(ctx,{type:'bar',data:{
+      labels,datasets:[{label:'# Items',data:counts,backgroundColor:'rgba(56,161,105,.7)',borderColor:'#38a169',borderWidth:1,borderRadius:4}]
+    },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:'Demand Range'}},y:{title:{display:true,text:'Number of Items'},ticks:{stepSize:1}}}}});
+  } else if(type==='hbar'){
+    const sorted=[...menuItems].sort((a,b)=>b.demand-a.demand);
+    charts['ch-demand']=new Chart(ctx,{type:'bar',data:{
+      labels:sorted.map(m=>m.name),
+      datasets:[{label:'Demand/day',data:sorted.map(m=>m.demand),backgroundColor:sorted.map(m=>m.demand>80?'#38a169':m.demand>50?'#3182ce':'#e53e3e'),borderRadius:4}]
+    },options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'#f0f0f0'}}}}});
+  } else if(type==='radar'){
+    const cats=['Veg','Non-Veg','Beverage','Snack'];
+    const vals=cats.map(c=>Math.round(menuItems.filter(m=>m.cat===c).reduce((s,m)=>s+m.demand,0)/(menuItems.filter(m=>m.cat===c).length||1)));
+    charts['ch-demand']=new Chart(ctx,{type:'radar',data:{
+      labels:cats,
+      datasets:[{label:'Avg Demand',data:vals,backgroundColor:'rgba(49,130,206,.2)',borderColor:'#3182ce',pointBackgroundColor:'#3182ce',pointRadius:5}]
+    },options:{responsive:true,maintainAspectRatio:false}});
+  }
+}
+
+function renderSmallCharts(){
+  destroyChart('ch-peak');
+  charts['ch-peak']=new Chart(document.getElementById('ch-peak').getContext('2d'),{type:'bar',data:{
+    labels:['8-10AM','10-12PM','12-2PM','2-4PM','4-6PM'],
+    datasets:[{label:'Orders',data:[210,185,310,140,170],backgroundColor:['#bee3f8','#bee3f8','#2b6cb0','#bee3f8','#bee3f8'],borderRadius:4}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}}},y:{grid:{color:'#f0f0f0'}}}}});
+
+  destroyChart('ch-day');
+  const dayTotals={Mon:0,Tue:0,Wed:0,Thu:0,Fri:0};
+  orders.forEach(o=>dayTotals[o.day]=(dayTotals[o.day]||0)+o.qty);
+  charts['ch-day']=new Chart(document.getElementById('ch-day').getContext('2d'),{type:'bar',data:{
+    labels:Object.keys(dayTotals),
+    datasets:[{label:'Units',data:Object.values(dayTotals),backgroundColor:'rgba(128,90,213,.6)',borderRadius:4}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f0f0'}}}}});
+
+  destroyChart('ch-rev');
+  const revByCat={};
+  orders.forEach(o=>{const m=menuItems.find(m=>m.name===o.item);if(m)revByCat[m.cat]=(revByCat[m.cat]||0)+o.revenue;});
+  charts['ch-rev']=new Chart(document.getElementById('ch-rev').getContext('2d'),{type:'pie',data:{
+    labels:Object.keys(revByCat),
+    datasets:[{data:Object.values(revByCat),backgroundColor:['#38a169','#e53e3e','#3182ce','#d69e2e'],borderWidth:2,borderColor:'#fff'}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+}
+
+// --- ANALYSIS ---
+function renderAnalysis(){
+  const totalRev=orders.reduce((s,o)=>s+o.revenue,0);
+  const avgDem=Math.round(menuItems.reduce((s,m)=>s+m.demand,0)/menuItems.length);
+  const topItem=[...menuItems].sort((a,b)=>b.demand-a.demand)[0];
+  document.getElementById('analysis-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Total Revenue</div><div class="metric-val">₹${(totalRev/1000).toFixed(1)}K</div><span class="metric-badge badge-green">This Week</span></div>
+    <div class="metric"><div class="metric-label">Menu Items</div><div class="metric-val">${menuItems.length}</div><span class="metric-badge badge-blue">Active</span></div>
+    <div class="metric"><div class="metric-label">Avg Demand</div><div class="metric-val">${avgDem}</div><span class="metric-badge badge-blue">Per Item/Day</span></div>
+    <div class="metric"><div class="metric-label">Top Item</div><div class="metric-val" style="font-size:16px">${topItem.name}</div><span class="metric-badge badge-green">${topItem.demand}/day</span></div>
+  `;
+
+  destroyChart('ch-predict');
+  const futureLabels=['Today','+1d','+2d','+3d','+4d','+5d','+6d'];
+  const actual=menuItems.slice(0,1)[0];
+  const base=actual.demand;
+  const actuals=[base,base*0.95,base*1.1,base*1.05,base*0.9,base*1.15,null];
+  const predicted=[null,null,null,base*1.05,base*0.92,base*1.18,base*1.08];
+  charts['ch-predict']=new Chart(document.getElementById('ch-predict').getContext('2d'),{type:'line',data:{
+    labels:futureLabels,
+    datasets:[
+      {label:'Actual',data:actuals,borderColor:'#3182ce',backgroundColor:'rgba(49,130,206,.1)',fill:true,tension:.4,pointRadius:4},
+      {label:'Predicted',data:predicted,borderColor:'#e53e3e',borderDash:[5,5],backgroundColor:'transparent',tension:.4,pointRadius:4}
+    ]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{grid:{color:'#f0f0f0'}}}}});
+
+  destroyChart('ch-scatter2');
+  charts['ch-scatter2']=new Chart(document.getElementById('ch-scatter2').getContext('2d'),{type:'scatter',data:{
+    datasets:[{label:'Menu Items',data:menuItems.map(m=>({x:m.price,y:m.demand})),backgroundColor:menuItems.map(m=>({Veg:'#38a169','Non-Veg':'#e53e3e',Beverage:'#3182ce',Snack:'#d69e2e'})[m.cat]||'#718096'),pointRadius:8}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){const m=menuItems[c.dataIndex];return `${m.name}: ₹${m.price}, ${m.demand}/day`;}}}},scales:{x:{title:{display:true,text:'Price (₹)'}},y:{title:{display:true,text:'Demand/day'}}}}});
+
+  document.getElementById('analysis-table').innerHTML=`<div style="overflow-x:auto"><table>
+    <tr><th>Item</th><th>Category</th><th>Price</th><th>Avg Demand</th><th>Weekly Revenue</th><th>Efficiency</th></tr>
+    ${menuItems.map(m=>{
+      const eff=Math.round((m.demand/150)*100);
+      return `<tr>
+        <td><b>${m.name}</b></td>
+        <td>${getCatTag(m.cat)}</td>
+        <td>₹${m.price}</td>
+        <td>${m.demand}/day</td>
+        <td>₹${(m.demand*m.price*5).toLocaleString()}</td>
+        <td><div class="progress-bar"><div class="progress-fill" style="width:${eff}%;background:${eff>70?'#38a169':eff>40?'#3182ce':'#e53e3e'}"></div></div><span style="font-size:11px;color:#718096">${eff}%</span></td>
+      </tr>`;
+    }).join('')}
+  </table></div>`;
+}
+
+// --- WASTE REDUCTION ---
+function renderWaste(){
+  const wasted=menuItems.filter(m=>m.demand<50);
+  const saved=menuItems.filter(m=>m.demand>=100);
+  document.getElementById('waste-summary').innerHTML=`
+    <div class="metric"><div class="metric-label">High Risk Items</div><div class="metric-val" style="color:#e53e3e">${wasted.length}</div><span class="metric-badge badge-red">Overproduction likely</span></div>
+    <div class="metric"><div class="metric-label">Estimated Waste Cost</div><div class="metric-val" style="color:#e53e3e">₹${wasted.reduce((s,m)=>s+m.price*10,0)}</div><span class="metric-badge badge-red">Daily</span></div>
+    <div class="metric"><div class="metric-label">High Demand Items</div><div class="metric-val" style="color:#38a169">${saved.length}</div><span class="metric-badge badge-green">Prepare more!</span></div>
+  `;
+
+  destroyChart('ch-waste');
+  const riskItems=menuItems.map(m=>({...m,risk:Math.max(0,m.demand*0.3-Math.random()*10)}));
+  charts['ch-waste']=new Chart(document.getElementById('ch-waste').getContext('2d'),{type:'bar',data:{
+    labels:menuItems.map(m=>m.name.length>10?m.name.slice(0,10)+'…':m.name),
+    datasets:[
+      {label:'Demand',data:menuItems.map(m=>m.demand),backgroundColor:'rgba(49,130,206,.7)',borderRadius:4},
+      {label:'Prepared',data:menuItems.map(m=>Math.round(m.demand*1.2)),backgroundColor:'rgba(229,62,62,.5)',borderRadius:4}
+    ]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{x:{ticks:{maxRotation:40,font:{size:10}}},y:{grid:{color:'#f0f0f0'}}}}});
+
+  const suggestions=[
+    {icon:'🥘',title:'Reduce Paneer Butter Masala prep by 20%',detail:'Demand: 40/day — consistently below 50. Prepare 32 instead of 48.',type:'warn'},
+    {icon:'🍳',title:'Egg Roll: Switch to evening-only production',detail:'Demand spikes only after 4 PM. Avoid morning prep to cut waste.',type:'warn'},
+    {icon:'☕',title:'Increase Chai production by 15%',detail:'High demand (150/day). Running out before 5 PM — increase stock.',type:'success'},
+    {icon:'🥟',title:'Samosa: Great demand (100+/day). Keep current prep.',detail:'Most cost-efficient item. Zero waste risk at current levels.',type:'success'},
+    {icon:'📊',title:'Monday & Wednesday: Peak days — prepare 25% more',detail:'Order data shows highest footfall Mon & Wed. Scale up accordingly.',type:'info'},
+    {icon:'🕐',title:'12-2 PM is peak slot — prioritize hot food availability',detail:'310 units sold in this slot. Ensure all hot items are ready by 11:45 AM.',type:'info'},
+  ];
+
+  document.getElementById('suggestions-list').innerHTML=suggestions.map(s=>`
+    <div class="alert alert-${s.type==='warn'?'warn':s.type==='success'?'success':'info'}" style="flex-direction:column;align-items:start;margin-bottom:8px">
+      <div style="font-weight:600;margin-bottom:2px">${s.icon} ${s.title}</div>
+      <div style="font-size:12px;opacity:.85">${s.detail}</div>
+    </div>`).join('');
+
+  destroyChart('ch-demvsprepared');
+  charts['ch-demvsprepared']=new Chart(document.getElementById('ch-demvsprepared').getContext('2d'),{type:'bar',data:{
+    labels:menuItems.map(m=>m.name.length>10?m.name.slice(0,10)+'…':m.name),
+    datasets:[
+      {label:'Actual Demand',data:menuItems.map(m=>m.demand),backgroundColor:'rgba(56,161,105,.7)',borderRadius:4},
+      {label:'Prepared (Predicted)',data:menuItems.map(m=>Math.round(m.demand*1.18)),backgroundColor:'rgba(213,171,62,.5)',borderRadius:4},
+      {label:'Waste (Surplus)',data:menuItems.map(m=>Math.round(m.demand*0.18)),backgroundColor:'rgba(229,62,62,.6)',borderRadius:4}
+    ]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{x:{ticks:{maxRotation:40,font:{size:10}}},y:{grid:{color:'#f0f0f0'}}}}});
+}
+
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+
+// Init
+renderDashboard();
+</script>
+</body>
+</html>
